@@ -69,7 +69,8 @@ def get_real_client_ip() -> str:
     client_ip = 'unknown'
 
     # 处理 X-Forwarded-For
-    if xff := request.headers.get('X-Forwarded-For'):
+    if "X-Forwarded-For" in request.headers:
+        xff = request.headers.get('X-Forwarded-For')
         proxies = [ip.strip() for ip in xff.split(',')]
         # 根据代理层数获取有效IP
         trusted_proxies = app.config['TRUSTED_PROXIES']
@@ -79,7 +80,8 @@ def get_real_client_ip() -> str:
                 break
 
     # 回退到 X-Real-IP
-    if client_ip == 'unknown' and (xri := request.headers.get('X-Real-IP')):
+    if client_ip == 'unknown' and ("X-Real-IP" in request.headers):
+        xri = request.headers.get('X-Real-IP')
         if validate_ip(xri):
             client_ip = xri
 
@@ -134,6 +136,12 @@ def get_client_ip():
             'remote_addr': request.remote_addr
         }
     })
+
+
+@app.route('/', methods=['GET'])
+def home():
+    """主页"""
+    return jsonify({'message': 'Welcome to IP Address API Service!'})
 
 
 @app.route('/health', methods=['GET'])
